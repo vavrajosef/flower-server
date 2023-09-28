@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flower-server
+  namespace: flower-app
+  labels:
+    app: flower-server
+spec:
+  selector:
+    matchLabels:
+      app: flower-server
+  template:
+    metadata:
+      labels:
+        app: flower-server
+    spec:
+      containers:
+      - name: flower-server
+        image: josefvavra/flower-server:latest
+        ports:
+        - containerPort: 8080
