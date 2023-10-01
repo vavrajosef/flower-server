@@ -1,6 +1,8 @@
 package server
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,7 +13,15 @@ import (
 )
 
 func GetAllFlowers(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	flowers, err := db.GetAllFlowers()
+	sqlConnection, err := openConnection(r.Context())
+	if err != nil {
+		w.WriteHeader(500)
+		fmt.Println("Error occured: ", err.Error())
+		json.NewEncoder(w).Encode("Internal error")
+		return
+	}
+	defer sqlConnection.Close()
+	flowers, err := db.GetAllFlowers(sqlConnection)
 	if err == nil {
 		w.WriteHeader(200)
 		json.NewEncoder(w).Encode(flowers)
@@ -24,7 +34,15 @@ func GetAllFlowers(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 func GetFlower(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	flowerId := ps.ByName("id")
-	flower, err := db.GetFlower(flowerId)
+	sqlConnection, err := openConnection(r.Context())
+	if err != nil {
+		w.WriteHeader(500)
+		fmt.Println("Error occured: ", err.Error())
+		json.NewEncoder(w).Encode("Internal error")
+		return
+	}
+	defer sqlConnection.Close()
+	flower, err := db.GetFlower(sqlConnection, flowerId)
 	if err == nil {
 		w.WriteHeader(200)
 		json.NewEncoder(w).Encode(flower)
@@ -36,7 +54,15 @@ func GetFlower(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func GetFlowersToWater(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	flowers, err := db.GetUnwateredFlowers()
+	sqlConnection, err := openConnection(r.Context())
+	if err != nil {
+		w.WriteHeader(500)
+		fmt.Println("Error occured: ", err.Error())
+		json.NewEncoder(w).Encode("Internal error")
+		return
+	}
+	defer sqlConnection.Close()
+	flowers, err := db.GetUnwateredFlowers(sqlConnection)
 	if err == nil {
 		w.WriteHeader(200)
 		json.NewEncoder(w).Encode(flowers)
@@ -49,7 +75,15 @@ func GetFlowersToWater(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 
 func UpdateFlower(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	flowerId := ps.ByName("id")
-	err := db.UpdateFlower(flowerId)
+	sqlConnection, err := openConnection(r.Context())
+	if err != nil {
+		w.WriteHeader(500)
+		fmt.Println("Error occured: ", err.Error())
+		json.NewEncoder(w).Encode("Internal error")
+		return
+	}
+	defer sqlConnection.Close()
+	err = db.UpdateFlower(sqlConnection, flowerId)
 	if err == nil {
 		w.WriteHeader(200)
 	} else {
@@ -63,7 +97,15 @@ func AddFlower(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	decoder := json.NewDecoder(r.Body)
 	var flowerDetail api.FlowerDetail
 	decoder.Decode(&flowerDetail)
-	err := db.AddFlower(flowerDetail)
+	sqlConnection, err := openConnection(r.Context())
+	if err != nil {
+		w.WriteHeader(500)
+		fmt.Println("Error occured: ", err.Error())
+		json.NewEncoder(w).Encode("Internal error")
+		return
+	}
+	defer sqlConnection.Close()
+	err = db.AddFlower(sqlConnection, flowerDetail)
 	if err == nil {
 		w.WriteHeader(200)
 	} else {
@@ -75,7 +117,15 @@ func AddFlower(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func RemoveFlower(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	flowerId := ps.ByName("id")
-	err := db.RemoveFlower(flowerId)
+	sqlConnection, err := openConnection(r.Context())
+	if err != nil {
+		w.WriteHeader(500)
+		fmt.Println("Error occured: ", err.Error())
+		json.NewEncoder(w).Encode("Internal error")
+		return
+	}
+	defer sqlConnection.Close()
+	err = db.RemoveFlower(sqlConnection, flowerId)
 	if err == nil {
 		w.WriteHeader(200)
 	} else {
@@ -83,4 +133,9 @@ func RemoveFlower(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		fmt.Println("Error occured: ", err.Error())
 		json.NewEncoder(w).Encode("Internal error")
 	}
+}
+
+func openConnection(ctx context.Context) (*sql.DB, error) {
+	connString := ctx.Value("connection-string").(string)
+	return sql.Open("postgres", connString)
 }
