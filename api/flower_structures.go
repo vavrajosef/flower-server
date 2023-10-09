@@ -5,12 +5,12 @@ import (
 )
 
 type Flower struct {
-	Id   string
+	Id   int
 	Name string
 }
 
 type FlowerDetail struct {
-	Id          string
+	Id          int
 	Name        string
 	Period      int
 	LastWatered time.Time
