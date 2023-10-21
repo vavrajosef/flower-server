@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	_ "github.com/lib/pq"
 	api "github.com/vavrajosef/flower-server/api"
 	db "github.com/vavrajosef/flower-server/internal/database"
 )
