@@ -18,11 +18,11 @@ spec:
       - name: flower-server
         image: josefvavra/flower-server:latest
         ports:
-        - containerPort: 8080
-        - env:
-          - name: DBUSER
-            value: admin
-          - name: DBPASS
-            value: admin
-          - name: DBNAME
-            value: postgresdb
+          - containerPort: 8080
+        env:
+        - name: DBUSER
+          value: admin
+        - name: DBPASS
+          value: admin
+        - name: DBNAME
+          value: postgresdb
